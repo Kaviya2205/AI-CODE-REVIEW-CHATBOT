@@ -1,0 +1,28 @@
+name: PR Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+      
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+      
+      - name: Run PR Analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          curl -X POST "http://localhost:8000/analyze_pr" -H "Content-Type: application/json" \
+          -d '{"repo": "${{ github.repository }}", "pr_number": ${{ github.event.pull_request.number }}}'
